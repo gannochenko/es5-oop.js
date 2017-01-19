@@ -13,10 +13,10 @@
 		var f = function(){};
 		f.prototype = proto;
 
-		return OOP.copyProperties(properties, new f);
+		return OOP.attachProperties(properties, new f);
 	};
 
-	OOP.copyProperties = function(from, to)
+	OOP.attachProperties = function(from, to)
 	{
 		if(OOP.isPlainObject(from))
 		{
@@ -61,7 +61,7 @@
 
 		runParentConstructor: function(owner)
 		{
-			if(typeof owner.super == 'object')
+			if(owner.super)
 			{
 				owner.super.constructor.apply(this, [null, true]);
 			}
@@ -109,27 +109,21 @@
 		};
 
 		OOP.extendClass(child, this);
+		child.extend = OOP.extend; // just a short-cut to extend() function
+
+		var methods = parameters.methods || {};
+
 		child.prototype.opts = OOP.inherit(child.super.opts || {}, parameters.options || {});
-		child.extend = window.OOP.extend; // just a short-cut to extend() function
+		OOP.attachProperties(methods, child.prototype);
 
-		parameters.methods = parameters.methods || {};
-
-		for(var k in parameters.methods)
-		{
-			if(parameters.methods.hasOwnProperty(k))
-			{
-				child.prototype[k] = parameters.methods[k];
-			}
-		}
-
-		if(typeof parameters.methods.construct != 'function') // "virtual" constructor to prevent constructor chain break
+		if(typeof methods.construct != 'function') // "virtual" constructor to prevent constructor chain break
 		{
 			var parent = this;
 			child.prototype.construct = function(){
 				parent.prototype.construct.call(this);
 			};
 		}
-		if(typeof parameters.methods.destruct != 'function')
+		if(typeof methods.destruct != 'function')
 		{
 			child.prototype.destruct = function(){};
 		}
