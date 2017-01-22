@@ -8,7 +8,7 @@
 		return typeof item == 'object' && typeof item.constructor == 'function';
 	};
 
-	OOP.inherit = function(proto, properties){
+	OOP.createObject = function(proto, properties){
 
 		var f = function(){};
 		f.prototype = proto;
@@ -32,10 +32,10 @@
 		return to;
 	};
 
-	OOP.extendClass = function(child, parent){
+	OOP.inherit = function(child, parent){
 		// 1. create empty object with __proto__ = parent.prototype
 		// and assign it to the child.prototype (a polyfill for Object.create())
-		child.prototype = this.inherit(parent.prototype);
+		child.prototype = this.createObject(parent.prototype);
 		// 2. fix up broken constructor
 		// normally child.prototype.constructor should point to child, but by replacing prototype at step 1 we
 		// broke this agreement!
@@ -98,7 +98,7 @@
 			if(!middle) // in the last constructor we run this
 			{
 				// final version of opts array should be ready before "post-constructors" are called
-				this.opts = OOP.inherit(child.prototype.opts, opts || {});
+				this.opts = OOP.createObject(child.prototype.opts, opts || {});
 
 				this.construct(); // run the top-level constructor
 
@@ -108,12 +108,12 @@
 			}
 		};
 
-		OOP.extendClass(child, this);
+		OOP.inherit(child, this);
 		child.extend = OOP.extend; // just a short-cut to extend() function
 
 		var methods = parameters.methods || {};
 
-		child.prototype.opts = OOP.inherit(child.super.opts || {}, parameters.options || {});
+		child.prototype.opts = OOP.createObject(child.super.opts || {}, parameters.options || {});
 		OOP.attachProperties(methods, child.prototype);
 
 		if(typeof methods.construct != 'function') // "virtual" constructor to prevent constructor chain break
